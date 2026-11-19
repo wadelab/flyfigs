@@ -1,0 +1,93 @@
+# GAL80 hSNCA dataset: Stretch et al., Figures 2 and 5 and their supplements.
+#
+#   flyfigs examples/gal80_hsnca/gal80_hsnca.toml
+#
+# To analyse another dataset, copy this file and edit it. Paths are relative to this file.
+
+output_dir = "output"     # where figures and tables are written (relative to this file)
+ages = [7, 14, 21, 28]    # DPE, for every figure unless its section sets `ages`. Climbing is
+                          # at floor for every genotype at 35 DPE.
+seed = 1                  # random seed for bootstraps and permutations
+
+# ---- SSVEP: one CSV per harmonic, one row per fly, one column per contrast --------------
+[ssvep]
+contrasts = [5, 10, 30, 70, 100]    # % contrast. Columns are x5, x10, ... unless `columns` lists them
+# contrast_ticks = [5, 10, 30, 100] # CRF x-axis ticks (default: contrasts at least 1.5x apart)
+units = "AU"
+phenotype = "increase"              # PD phenotype is a larger response (sets the sign of g)
+genotype_column = "Genotype"
+age_column = "Age"
+# query = "Sex == 'M'"              # optional pandas query selecting rows
+
+[[ssvep.harmonics]]
+code = "1F1"
+label = "Photoreceptor"
+file = "data/GAL80s_upto35dpe_1F1.csv"
+
+[[ssvep.harmonics]]
+code = "2F1"
+label = "Lamina"
+file = "data/GAL80s_upto35dpe_2F1.csv"
+
+# ---- Climbing: one row per fly (TrackMate export); omit the section if there is none ----
+[climbing]
+file = "data/GAL80LacZSNCAs_1to35dpe.csv"
+genotype_column = "Genotype"
+age_column = "Age dpe"
+measure = "Total distance traveled"
+ylabel = "Total distance travelled (mm)"
+phenotype = "decrease"              # PD phenotype is less distance
+# query = "Drug == 'no'"
+
+# ---- Genotypes, in plotting order. Exactly one has control = true. ---------------------
+# name: identifies the genotype in the output tables.
+# codes: its value in each data kind's genotype column (default: name).
+[[genotypes]]
+name = "LacZ"
+label = "Control"
+control = true
+colour = "#262626"
+marker = "o"
+codes = { ssvep = "GAL80LACZ", climbing = "GAL80LacZ" }
+
+[[genotypes]]
+name = "SNCAWT"
+label = 'hSNCA$^{\mathrm{WT}}$'
+colour = "#8FB0DE"
+marker = "o"
+codes = { ssvep = "GAL80SNCAWT", climbing = "SNCAWT" }
+
+[[genotypes]]
+name = "A30P"
+label = 'hSNCA$^{\mathrm{A30P}}$'
+colour = "#5A7FC4"
+marker = "s"
+codes = { ssvep = "GAL80A30P", climbing = "A30P" }
+
+[[genotypes]]
+name = "A53T"
+label = 'hSNCA$^{\mathrm{A53T}}$'
+colour = "#27347A"
+marker = "^"
+codes = { ssvep = "GAL80A53T", climbing = "A53T" }
+
+# ---- Figures ---------------------------------------------------------------------------
+[hedges_g]                              # Figure 5 G-I
+contrast = 30                           # SSVEP contrast (%) compared
+measures = ["2F1", "1F1", "climbing"]   # plotting and legend order (default: as listed above)
+n_boot = 5000
+n_perm = 10000
+
+[climbing_summary]
+ages = "all"
+
+[crf_fits]
+n_boot = 300
+models = ["hr", "ss", "fixc50", "fixRmax"]
+
+[crf_param_boxes]
+n_boot = 1000
+
+[crf_combined]                          # Figure 2 A-D
+n_boot = 1000
+n_perm = 50000                          # Holm across 24 tests needs >~25,000 permutations to reach p < 0.001
